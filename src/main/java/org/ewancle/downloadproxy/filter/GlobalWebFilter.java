@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-//@DependsOn("webClientNoRedirect")
+@DependsOn("webClientNoRedirect")
 public class GlobalWebFilter implements WebFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalWebFilter.class);
