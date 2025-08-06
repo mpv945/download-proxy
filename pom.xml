@@ -67,6 +67,7 @@
                         <!--<buildArg>&#45;&#45;static</buildArg> --><!-- 静态编译（配合 musl） -->
                         <!--<buildArg>&#45;&#45;libc=musl</buildArg>-->
                         <buildArg>--initialize-at-run-time=org.springframework.core.io.VfsUtils</buildArg>
+                        <buildArg>--initialize-at-build-time=java.net.Inet6Address</buildArg>
                     </buildArgs>
                 </configuration>
             </plugin>
