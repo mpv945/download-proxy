@@ -32,6 +32,14 @@ jobs:
             -w /app \
             ghcr.io/graalvm/graalvm-community:24 \
             bash -c "chmod +x ./mvnw && ./mvnw native:compile -DskipTests -Pnative"
+      - name: Compress binary with UPX
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          # version: latest
+          files: |
+            target/native-spring-app
+          # args: -fq
+          args: --best --lzma
       - name: Rename binary
         run: |
           mkdir -p dist
