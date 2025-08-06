@@ -57,10 +57,6 @@
                         <!-- GC 优化 -->
                         <buildArg>--gc=G1</buildArg>
                         <buildArg>-O2</buildArg>
-                        <!-- 内存优化 -->
-                        <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
-                        <buildArg>-H:+UseG1GC</buildArg>
-                        <buildArg>-H:MaxGCPauseMillis=100</buildArg>
 
                         <buildArg>--no-fallback</buildArg>             <!-- 不包含 JVM fallback，减小体积 -->
                         <!--<buildArg>&#45;&#45;strip-debug</buildArg>-->             <!-- 去除调试信息;在mvn命令传递 -->
