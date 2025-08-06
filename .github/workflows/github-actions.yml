@@ -32,10 +32,10 @@ jobs:
             -w /app \
             ghcr.io/graalvm/graalvm-community:24 \
             bash -c "chmod +x ./mvnw && ./mvnw native:compile -DskipTests -Pnative"
+          chmod +w target/download-proxy
       - name: View Build target
         run: |
           ls -alh target/
-          chmod +w target/download-proxy
       - name: Compress binary with UPX
         uses: crazy-max/ghaction-upx@v3
         with:
