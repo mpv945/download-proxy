@@ -35,6 +35,7 @@ jobs:
       - name: View Build target
         run: |
           ls -alh target/
+          chmod +w target/download-proxy
       - name: Compress binary with UPX
         uses: crazy-max/ghaction-upx@v3
         with:
@@ -42,7 +43,7 @@ jobs:
           files: |
             target/download-proxy
           # args: -fq
-          args: --best --lzma -o target/download-proxy
+          args: --best --lzma target/download-proxy.upx -o target/download-proxy
       - name: View UPX target
         run: |
           ls -alh target/
