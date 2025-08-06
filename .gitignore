@@ -6,6 +6,7 @@ target/
 
 ### GitHub Actions ###
 .github
+.github/
 
 ### STS ###
 .apt_generated
