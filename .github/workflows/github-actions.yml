@@ -35,9 +35,9 @@ jobs:
       - name: Compress binary with UPX
         uses: crazy-max/ghaction-upx@v3
         with:
-          # version: latest
-          files: |
-            target/download-proxy
+          version: latest
+          #files: |
+          #  target/download-proxy
           # args: -fq
           args: --best --lzma -o target/download-proxy target/download-proxy
       - name: Rename binary
