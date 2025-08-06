@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 jobs:
   build-native:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 系统os选择：https://github.com/actions/runner-images?tab=readme-ov-file
     strategy:
       matrix:
         # platform: [linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64]
@@ -27,11 +27,17 @@ jobs:
       - name: Build native image in Docker (musl)
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
-            --entrypoint sh \
+            --entrypoint /bin/bash \
             -v $PWD:/app \
             -w /app \
             ghcr.io/graalvm/native-image-community:24-muslib \
             -c "chmod +x ./mvnw && ./mvnw native:compile -DskipTests -Pnative"
+      #- name: Java evn
+      #  uses: actions/setup-java@v4 # https://github.com/actions/setup-java?tab=readme-ov-file
+      #  with:
+      #    distribution: 'graalvm' # See 'Supported distributions' for available options
+      #    java-version: '24'
+      #    architecture: aarch64
       - name: View Build target
         run: |
           ls -alh target/
