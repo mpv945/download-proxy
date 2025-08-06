@@ -6,6 +6,7 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
@@ -16,7 +17,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 // 1. 配置类 - WebFluxConfig.java
-@Configuration
+//@Configuration
+@Component // 用 @Component 替代 @Configuration（最简洁）@Component 不会被 CGLIB 增强，是 Spring AOT 友好方案，100% 支持 Native Image 构建。
 public class WebFluxConfig {
 
     @Bean
