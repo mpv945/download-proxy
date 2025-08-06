@@ -64,7 +64,7 @@
                         <buildArg>--install-exit-handlers</buildArg>   <!-- 优雅退出处理（推荐） -->
                         <buildArg>--native-image-info</buildArg>       <!-- 构建信息（可选） -->
                         <buildArg>--verbose</buildArg>                 <!-- 调试可选 -->
-                        <buildArg>--static</buildArg> <!-- 静态编译（配合 musl） -->
+                        <!--<buildArg>&#45;&#45;static</buildArg> --><!-- 静态编译（配合 musl） -->
                     </buildArgs>
                 </configuration>
             </plugin>
