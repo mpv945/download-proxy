@@ -39,7 +39,7 @@ jobs:
           files: |
             target/download-proxy
           # args: -fq
-          args: --best --lzma
+          args: --best --lzma -o target/download-proxy target/download-proxy
       - name: Rename binary
         run: |
           mkdir -p dist
