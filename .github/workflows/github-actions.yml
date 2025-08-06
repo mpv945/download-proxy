@@ -32,18 +32,25 @@ jobs:
             -w /app \
             ghcr.io/graalvm/graalvm-community:24 \
             bash -c "chmod +x ./mvnw && ./mvnw native:compile -DskipTests -Pnative"
+      - name: View Build target
+        run: |
+          ls -alh target/
       - name: Compress binary with UPX
         uses: crazy-max/ghaction-upx@v3
         with:
           version: latest
-          #files: |
-          #  target/download-proxy
+          files: |
+            target/download-proxy
           # args: -fq
-          args: --best --lzma -o target/download-proxy target/download-proxy
+          args: --best --lzma -o target/download-proxy
+      - name: View UPX target
+        run: |
+          ls -alh target/
       - name: Rename binary
         run: |
+          PLATFORM_TAG=${{ matrix.platform && matrix.platform.replace('/', '-') }}
           mkdir -p dist
-          cp target/download-proxy dist/download-proxy-${{ matrix.platform }}
+          cp target/download-proxy dist/download-proxy-$PLATFORM_TAG
 
       - name: Upload to GitHub Artifact
         uses: actions/upload-artifact@v4
