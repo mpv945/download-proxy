@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         # platform: [linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64]
-        platform: [linux/amd64, linux/arm64]
+        platform: [linux/amd64]
     name: Build native image for ${{ matrix.platform }}
     steps:
       - name: Checkout source
