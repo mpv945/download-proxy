@@ -43,7 +43,7 @@ jobs:
           files: |
             target/download-proxy
           # args: -fq
-          args: --best --lzma target/download-proxy.upx -o target/download-proxy
+          args: --best --lzma
       - name: View UPX target
         run: |
           ls -alh target/
