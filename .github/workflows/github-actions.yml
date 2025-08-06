@@ -30,7 +30,7 @@ jobs:
             -v $PWD:/app \
             -w /app \
             ghcr.io/graalvm/native-image-community:24-muslib \
-            bash -c "chmod +x ./mvnw && ./mvnw native:compile -DskipTests -Pnative"
+            sh -c "chmod +x ./mvnw && ./mvnw native:compile -DskipTests -Pnative"
       - name: View Build target
         run: |
           ls -alh target/
