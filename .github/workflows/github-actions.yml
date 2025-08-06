@@ -37,16 +37,16 @@ jobs:
         with:
           # version: latest
           files: |
-            target/native-spring-app
+            target/download-proxy
           # args: -fq
           args: --best --lzma
       - name: Rename binary
         run: |
           mkdir -p dist
-          cp target/native-spring-app dist/native-spring-app-${{ matrix.platform }}
+          cp target/download-proxy dist/download-proxy-${{ matrix.platform }}
 
       - name: Upload to GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
           name: native-app-${{ matrix.platform }}
-          path: dist/native-spring-app-${{ matrix.platform }}
+          path: dist/download-proxy-${{ matrix.platform }}
