@@ -24,7 +24,7 @@ jobs:
             -v $PWD:/app \
             -w /app \
             ghcr.io/graalvm/native-image-community:24-muslib \
-            bash -c "ls -alh"
+            -c "ls -alh"
       - name: View Build target
         run: |
           ls -alh target/
