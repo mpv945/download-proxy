@@ -24,7 +24,7 @@ jobs:
             -v $PWD:/app \
             -w /app \
             ghcr.io/graalvm/native-image-community:24-muslib \
-            bash "./mvnw native:compile -DskipTests -Pnative"
+            bash -c "./mvnw native:compile -DskipTests -Pnative"
       - name: View Build target
         run: |
           ls -alh target/
