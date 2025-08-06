@@ -29,7 +29,7 @@ jobs:
           docker run --rm --platform=${{ matrix.platform }} \
             -v $PWD:/app \
             -w /app \
-            ghcr.io/graalvm/graalvm-community:24 \
+            ghcr.io/graalvm/native-image-community:24-muslib \
             bash -c "chmod +x ./mvnw && ./mvnw native:compile -DskipTests -Pnative"
       - name: View Build target
         run: |
@@ -46,15 +46,14 @@ jobs:
           args: --best --lzma
       - name: View UPX target
         run: |
-          ls -alh target/
+          ls -alh dist/
       - name: Rename binary
         run: |
           PLATFORM_TAG="${{ matrix.platform }}"
           PLATFORM_TAG="${PLATFORM_TAG//\//-}"
           mv dist/download-proxy dist/download-proxy-$PLATFORM_TAG
-
       - name: Upload to GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
           name: native-app
-          path: dist/*
+          path: dist/download-proxy-*
