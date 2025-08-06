@@ -21,10 +21,11 @@ jobs:
       - name: Build native image in Docker (musl)
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
+            --entrypoint sh \
             -v $PWD:/app \
             -w /app \
             ghcr.io/graalvm/native-image-community:24-muslib \
-            /bin/bash "ls -lah"
+            -c "ls -lah"
       - name: View Build target
         run: |
           ls -alh target/
