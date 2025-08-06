@@ -65,12 +65,20 @@
                         <buildArg>--native-image-info</buildArg>       <!-- 构建信息（可选） -->
                         <buildArg>--verbose</buildArg>                 <!-- 调试可选 -->
                         <!--<buildArg>&#45;&#45;static</buildArg> --><!-- 静态编译（配合 musl） -->
+                        <buildArg>--libc=musl</buildArg>
                     </buildArgs>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process-aot</goal> <!-- 会生成 AOT 代码 -->
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
