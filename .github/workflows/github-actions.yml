@@ -1,18 +1,42 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+name: 多系统原生执行文件发布
+run-name: ${{ github.actor }} GitHub Actions 🚀
+on:
+  push:
+    branches:
+      - main
+    # tags: [ 'v*.*.*' ]  # 如 v1.0.0 会触发构建
+  workflow_dispatch:
 jobs:
-  Explore-GitHub-Actions:
+  build-native:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64]
+    name: Build native image for ${{ matrix.platform }}
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
+      - name: Checkout source
         uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up QEMU (cross-compilation)
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build native image in Docker (musl)
         run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          docker run --rm --platform=${{ matrix.platform }} \
+            -v $PWD:/app \
+            -w /app \
+            ghcr.io/graalvm/graalvm-community:24 \
+            bash -c "./mvnw native:compile -DskipTests -Pnative"
+      - name: Rename binary
+        run: |
+          mkdir -p dist
+          cp target/native-spring-app dist/native-spring-app-${{ matrix.platform }}
+
+      - name: Upload to GitHub Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-app-${{ matrix.platform }}
+          path: dist/native-spring-app-${{ matrix.platform }}

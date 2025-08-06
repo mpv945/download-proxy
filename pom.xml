@@ -52,6 +52,16 @@
             <plugin>
                 <groupId>org.graalvm.buildtools</groupId>
                 <artifactId>native-maven-plugin</artifactId>
+                <configuration>
+                    <buildArgs>
+                        <buildArg>--no-fallback</buildArg>
+                        <buildArg>--initialize-at-build-time</buildArg> <!-- 体积优化 -->
+                        <buildArg>--strip-debug</buildArg> <!-- 减小体积 -->
+                        <!--<buildArg>&#45;&#45;enable-http</buildArg>-->
+                        <!--<buildArg>&#45;&#45;enable-https</buildArg>-->
+                        <buildArg>--static</buildArg> <!-- 静态编译（配合 musl） -->
+                    </buildArgs>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
