@@ -57,7 +57,7 @@
                         <buildArg>--no-fallback</buildArg>             <!-- 不包含 JVM fallback，减小体积 -->
                         <!--<buildArg>&#45;&#45;strip-debug</buildArg>-->             <!-- 去除调试信息;在mvn命令传递 -->
                         <!--<buildArg>&#45;&#45;compress=2</buildArg>-->
-                        <buildArg>--compress=2</buildArg>              <!-- 最高压缩等级 -->
+                        <!--<buildArg>&#45;&#45;compress=2</buildArg> -->             <!-- 最高压缩等级 -->
                         <buildArg>--initialize-at-build-time</buildArg><!-- 尽量静态初始化，优化性能 -->
                         <buildArg>--report-unsupported-elements-at-runtime</buildArg> <!-- 避免静态失败 -->
                         <buildArg>--enable-url-protocols=http,https</buildArg>       <!-- 减少无用 protocol -->
