@@ -27,7 +27,6 @@ jobs:
       - name: Build native image in Docker (musl)
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
-            -u $(id -u):$(id -g) \
             -v $PWD:/app \
             -w /app \
             ghcr.io/graalvm/graalvm-community:24 \
@@ -35,12 +34,14 @@ jobs:
       - name: View Build target
         run: |
           ls -alh target/
+          mkdir -p dist
+          cp target/download-proxy dist/download-proxy
       - name: Compress binary with UPX
         uses: crazy-max/ghaction-upx@v3
         with:
           version: latest
           files: |
-            target/download-proxy
+            dist/download-proxy
           # args: -fq
           args: --best --lzma
       - name: View UPX target
@@ -50,8 +51,7 @@ jobs:
         run: |
           PLATFORM_TAG="${{ matrix.platform }}"
           PLATFORM_TAG="${PLATFORM_TAG//\//-}"
-          mkdir -p dist
-          cp target/download-proxy dist/download-proxy-$PLATFORM_TAG
+          mv dist/download-proxy dist/download-proxy-$PLATFORM_TAG
 
       - name: Upload to GitHub Artifact
         uses: actions/upload-artifact@v4
