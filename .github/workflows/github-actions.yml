@@ -48,12 +48,13 @@ jobs:
           ls -alh target/
       - name: Rename binary
         run: |
-          PLATFORM_TAG=${{ matrix.platform && matrix.platform.replace('/', '-') }}
+          PLATFORM_TAG="${{ matrix.platform }}"
+          PLATFORM_TAG="${PLATFORM_TAG//\//-}"
           mkdir -p dist
           cp target/download-proxy dist/download-proxy-$PLATFORM_TAG
 
       - name: Upload to GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: native-app-${{ matrix.platform }}
-          path: dist/download-proxy-${{ matrix.platform }}
+          name: native-app
+          path: dist/*
