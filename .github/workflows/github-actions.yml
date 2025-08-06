@@ -27,12 +27,11 @@ jobs:
       - name: Build native image in Docker (musl)
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
-            --privileged=true \
+            -u $(id -u):$(id -g) \
             -v $PWD:/app \
             -w /app \
             ghcr.io/graalvm/graalvm-community:24 \
             bash -c "chmod +x ./mvnw && ./mvnw native:compile -DskipTests -Pnative"
-          chmod +w target/download-proxy
       - name: View Build target
         run: |
           ls -alh target/
