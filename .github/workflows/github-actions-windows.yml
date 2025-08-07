@@ -66,6 +66,13 @@ jobs:
         run: |
           java -version
           mvn --version
-          mvn native:compile -DskipTests -Pnative -Dspring-boot.build-image.imageName=${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -DfinalName=${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -Dnative.imageName=${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
+          mvn -Dspring-boot.build-image.imageName=${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -DfinalName=${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -Dnative.imageName=${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -Dmaven.test.skip=true -Pnative native:compile
           ls -alh target/
           echo ${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
+          if [[ ! "$OS_NAME" =~ windows ]]; then
+            chmod +x target/${{ env.ARTIFACT_ID }}
+          fi
+          mkdir artifact
+          cp target/${{ env.ARTIFACT_ID }}${{ matrix.os == 'windows-latest' && '.exe' || '' }} artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+          cp target/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}.jar artifact/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}.jar
+          ls -lah artifact/
