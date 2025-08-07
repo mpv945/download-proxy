@@ -28,9 +28,9 @@ jobs:
       - name: install maven
         shell: bash
         run: |
-          if [[ "${{ toLowerCase(matrix.os) }}" =~ windows ]]; then
+          if [[ "${{ matrix.os }}" =~ windows ]]; then
             choco install maven -y
-          elif [[ "${{ toLowerCase(matrix.os) }}" =~ macos ]]; then
+          elif [[ "${{ matrix.os }}" =~ macos ]]; then
             brew install maven
           else
             apt install -y maven
