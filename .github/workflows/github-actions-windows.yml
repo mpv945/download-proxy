@@ -6,7 +6,7 @@ on:
       - main
     # tags: [ 'v*.*.*' ]  # 如 v1.0.0 会触发构建
 jobs:
-  build-native:
+  build-matrix-os:
     runs-on: ${{ matrix.os }} # 系统os选择：https://github.com/actions/runner-images?tab=readme-ov-file
     strategy:
       matrix:
@@ -70,8 +70,8 @@ jobs:
           if [[ "${{ matrix.os }}" =~ windows ]]; then
             echo "choco install maven -y"
             choco install upx -y
-            upx --best --lzma --strip-relocs=1 artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
-            upx --ultra-brute --lzma --all-methods --all-filters --strip-relocs=1 artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}${{ matrix.os == 'windows-latest' && '.exe' || '' }} -o  artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-mini${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+            upx --best --lzma artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+            # upx --ultra-brute --lzma --all-methods --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}${{ matrix.os == 'windows-latest' && '.exe' || '' }} -o  artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-mini${{ matrix.os == 'windows-latest' && '.exe' || '' }}
           elif [[ "${{ matrix.os }}" =~ macos ]]; then
             echo "brew install maven"
             # brew install upx （Apple 的 代码签名机制 与 可执行文件结构 不兼容 UPX 的修改。）
@@ -87,3 +87,28 @@ jobs:
         with:
           name: artifact-${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
           path: artifact/*
+  deploy-releases:
+    runs-on: ubuntu-latest
+    needs: [build-matrix-os]
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 提取项目名和版本
+      - name: Extract Project Name and Version
+        shell: bash
+        run: |
+          ARTIFACT_ID=$(mvn help:evaluate -q -DforceStdout -Dexpression=project.artifactId)
+          echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_ENV
+      # 3. 下载所有 Artifacts
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          pattern: artifact-${{ env.ARTIFACT_ID }}-*
+          merge-multiple: true
+      # 4. 列出下载的文件（调试）
+      - name: List Downloaded Files
+        run: ls -lR artifacts/
