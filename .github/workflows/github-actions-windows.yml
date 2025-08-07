@@ -25,7 +25,17 @@ jobs:
           # check-latest: true
           cache: 'maven'
           cache-dependency-path: 'pom.xml'
+      - name: install maven
+        shell: bash
+        run: |
+          if [[ "${{ toLowerCase(matrix.os) }}" =~ windows ]]; then
+            choco install maven -y
+          elif [[ "${{ toLowerCase(matrix.os) }}" =~ macos ]]; then
+            brew install maven
+          else
+            apt install -y maven
+          fi
       - name: Print Java Info
         run: |
           java -version
-          ./mvnw --version
+          mvn --version
