@@ -66,6 +66,6 @@ jobs:
         run: |
           java -version
           mvn --version
-          mvn native:compile -DskipTests -Pnative -DfinalName=${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -Dnative.imageName=${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
+          mvn native:compile -DskipTests -Pnative -Dspring-boot.build-image.imageName=${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -DfinalName=${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -Dnative.imageName=${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
           ls -alh target/
-          echo $OS_CLASSIFIER
+          echo ${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
