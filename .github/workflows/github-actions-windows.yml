@@ -25,16 +25,6 @@ jobs:
           # check-latest: true
           # cache: 'maven'
           # cache-dependency-path: 'pom.xml'
-      - name: install maven
-        #shell: bash
-        run: |
-          if [[ "${{ matrix.os }}" =~ windows ]]; then
-            choco install maven -y
-          elif [[ "${{ matrix.os }}" =~ macos ]]; then
-            brew install maven
-          else
-            apt install -y maven
-          fi
       - name: Print Java Info
         run: |
           java -version
