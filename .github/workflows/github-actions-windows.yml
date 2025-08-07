@@ -23,7 +23,7 @@ jobs:
           distribution: 'graalvm' # See 'Supported distributions' for available options
           java-version: ${{ matrix.java }}
           # check-latest: true
-          cache: "maven-${{ matrix.java }}"
+          cache: "maven"
           cache-dependency-path: 'pom.xml'
       - name: install maven
         shell: bash
@@ -36,6 +36,9 @@ jobs:
             echo "apt install -y maven"
           fi
       - name: Print Java Info
+        shell: bash
         run: |
           java -version
           mvn --version
+          mvn native:compile -DskipTests -Pnative
+          ls -alh target/
