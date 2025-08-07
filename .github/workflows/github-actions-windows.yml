@@ -28,3 +28,4 @@ jobs:
       - name: Print Java Info
         run: |
           java -version
+          ./mvnw --version
