@@ -1,0 +1,30 @@
+name: windows平台
+run-name: ${{ github.actor }} GitHub Actions 🚀
+on:
+  push:
+    branches:
+      - main
+    # tags: [ 'v*.*.*' ]  # 如 v1.0.0 会触发构建
+jobs:
+  build-native:
+    runs-on: ${{ matrix.os }} # 系统os选择：https://github.com/actions/runner-images?tab=readme-ov-file
+    strategy:
+      matrix:
+        # platform: [linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64]
+        os: [ubuntu-latest, ubuntu-latest-arm64, macos-latest, macos-latest-arm64, windows-latest]
+        java: [24]
+    name: Build native image for ${{ matrix.os }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4 # https://github.com/actions/setup-java
+        with:
+          distribution: 'graalvm' # See 'Supported distributions' for available options
+          java-version: ${{ matrix.java }}
+          check-latest: true
+          cache: 'maven'
+          cache-dependency-path: 'pom.xml'
+      - name: Print Java Info
+        run: |
+          java -version

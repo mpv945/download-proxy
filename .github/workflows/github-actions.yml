@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} GitHub Actions 🚀
 on:
   push:
     branches:
-      - main
+      - main1
     # tags: [ 'v*.*.*' ]  # 如 v1.0.0 会触发构建
   workflow_dispatch:
 jobs:
