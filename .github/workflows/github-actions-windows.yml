@@ -25,21 +25,6 @@ jobs:
           # check-latest: true
           cache: "maven"
           cache-dependency-path: 'pom.xml'
-      - name: install maven
-        #if: "!contains(matrix.os, windows)"
-        shell: bash
-        # shell: ${{ matrix.os == 'windows-latest' && 'cmd' || 'bash' }}
-        run: |
-          if [[ "${{ matrix.os }}" =~ windows ]]; then
-            echo "choco install maven -y"
-            choco install upx -y
-          elif [[ "${{ matrix.os }}" =~ macos ]]; then
-            echo "brew install maven"
-            brew install upx
-          else
-            echo "apt install -y maven"
-            sudo apt install upx
-          fi
       - name: Extract Project Name and Version
         shell: bash
         run: |
@@ -75,4 +60,25 @@ jobs:
           mkdir artifact
           cp target/${{ env.ARTIFACT_ID }}${{ matrix.os == 'windows-latest' && '.exe' || '' }} artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
           cp target/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}.jar artifact/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}.jar
+          ls -lah artifact/
+      - name: install upx
+        #if: "!contains(matrix.os, windows)"
+        shell: bash
+        # shell: ${{ matrix.os == 'windows-latest' && 'cmd' || 'bash' }}
+        run: |
+          ls -lah artifact/
+          if [[ "${{ matrix.os }}" =~ windows ]]; then
+            echo "choco install maven -y"
+            choco install upx -y
+            upx --best --lzma --strip-relocs=1 artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+            upx --ultra-brute --lzma --all-methods --all-filters --strip-relocs=1 artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}${{ matrix.os == 'windows-latest' && '.exe' || '' }} -o  artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-mini${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+          elif [[ "${{ matrix.os }}" =~ macos ]]; then
+            echo "brew install maven"
+            brew install upx
+            upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
+          else
+            echo "apt install -y maven"
+            sudo apt install upx
+            upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
+          fi
           ls -lah artifact/
