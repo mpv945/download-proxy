@@ -22,7 +22,7 @@ jobs:
         with:
           distribution: 'graalvm' # See 'Supported distributions' for available options
           java-version: ${{ matrix.java }}
-          check-latest: true
+          # check-latest: true
           cache: 'maven'
           cache-dependency-path: 'pom.xml'
       - name: Print Java Info
