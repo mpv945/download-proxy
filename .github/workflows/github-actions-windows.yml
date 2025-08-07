@@ -26,7 +26,7 @@ jobs:
           # cache: 'maven'
           # cache-dependency-path: 'pom.xml'
       - name: install maven
-        shell: bash
+        #shell: bash
         run: |
           if [[ "${{ matrix.os }}" =~ windows ]]; then
             choco install maven -y
