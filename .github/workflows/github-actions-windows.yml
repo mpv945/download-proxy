@@ -1,4 +1,4 @@
-name: windows平台
+name: Java本地原生应用开发编译和部署
 run-name: ${{ github.actor }} GitHub Actions 🚀
 on:
   push:
@@ -8,6 +8,8 @@ on:
 jobs:
   build-matrix-os:
     runs-on: ${{ matrix.os }} # 系统os选择：https://github.com/actions/runner-images?tab=readme-ov-file
+    env:
+      BUILD_DATETIME: "$(TZ='Asia/Shanghai' date +'%Y%m%d%H%M%S')"
     strategy:
       matrix:
         # platform: [linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64]
@@ -78,8 +80,11 @@ jobs:
             # upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
           else
             echo "apt install -y maven"
-            sudo apt install upx
+            sudo apt install -y xz-utils upx
             upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
+            docker build -f Dockerfile --build-arg APP_FILE=./artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -t "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}:$BUILD_DATETIME" .
+            # 常用压缩：xz -T0 -z；导入：xz -dc < ubuntu_latest.tar.xz | docker load
+            docker save "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}:$BUILD_DATETIME" | xz -T0 -9e -zc - > "artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}_$BUILD_DATETIME.tar.xz"
           fi
           ls -lah artifact/
       - name: Upload Native Executable
@@ -111,4 +116,20 @@ jobs:
           merge-multiple: true
       # 4. 列出下载的文件（调试）
       - name: List Downloaded Files
-        run: ls -lR artifacts/
+        run: ls -lRh artifacts/
+      # 5. 创建 GitHub Release 并上传 Artifacts
+      - name: Create Release and Upload Artifacts
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        #if: startsWith(github.ref, 'refs/tags/') # 仅在tag时上传
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          body: Automated release for ${{ env.ARTIFACT_ID }} v${{ env.VERSION }} with UPX compression
+          files: |
+            artifacts/native-windows-x86_64/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-windows-x86_64.exe
+            artifacts/native-linux-x86_64/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-linux-x86_64
+            artifacts/native-macos-x86_64/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-macos-x86_64
+            artifacts/native-macos-aarch64/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-macos-aarch64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
