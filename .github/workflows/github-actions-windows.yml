@@ -26,19 +26,46 @@ jobs:
           cache: "maven"
           cache-dependency-path: 'pom.xml'
       - name: install maven
+        if: "!contains(matrix.os, windows)"
         shell: bash
+        # shell: ${{ matrix.os == 'windows-latest' && 'cmd' || 'bash' }}
         run: |
           if [[ "${{ matrix.os }}" =~ windows ]]; then
             echo "choco install maven -y"
+            choco install upx -y
           elif [[ "${{ matrix.os }}" =~ macos ]]; then
             echo "brew install maven"
+            brew install upx
           else
             echo "apt install -y maven"
+            sudo apt install upx
           fi
+      - name: Extract Project Name and Version
+        shell: bash
+        run: |
+          ARTIFACT_ID=$(mvn help:evaluate -q -DforceStdout -Dexpression=project.artifactId)
+          VERSION=$(mvn help:evaluate -q -DforceStdout -Dexpression=project.version)
+          echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Normalize OS Name
+        shell: bash
+        run: |
+          OS_NAME=$(java -XshowSettings:properties -version 2>&1 | grep "os.name" | awk -F' = ' '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/ //g')
+          if [[ "$OS_NAME" =~ windows ]]; then
+            OS_CLASSIFIER="windows"
+          elif [[ "$OS_NAME" =~ macos|darwin ]]; then
+            OS_CLASSIFIER="macos"
+          else
+            OS_CLASSIFIER="linux"
+          fi
+          echo "OS_CLASSIFIER=$OS_CLASSIFIER" >> $GITHUB_ENV
+          OS_ARCH=$(java -XshowSettings:properties -version 2>&1 | grep "os.arch" | awk -F' = ' '{print $2}')
+          echo "OS_ARCH=$OS_ARCH" >> $GITHUB_ENV
       - name: Print Java Info
         shell: bash
         run: |
           java -version
           mvn --version
-          mvn native:compile -DskipTests -Pnative
+          mvn native:compile -DskipTests -Pnative -DfinalName=${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -Dnative.imageName=${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
           ls -alh target/
+          echo $OS_CLASSIFIER
