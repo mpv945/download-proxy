@@ -333,4 +333,5 @@ jobs:
           # 2. 跳转页面后，在左边菜单栏找到 （Developer settings 开发者设置） 点击跳转
           # 3. 跳转页面找到左菜单栏 （Personal access tokens）“个人访问令牌”下拉菜单选择 【Tokens (classic) 】单击“令牌（经典）
           # 4 选择生成令牌（也选择经典classic） ，弹出对于的 过期时间和权限访问
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 固定写法，并在顶上配置添加 contents: write
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
