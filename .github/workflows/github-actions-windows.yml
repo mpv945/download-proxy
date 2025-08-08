@@ -154,6 +154,7 @@ jobs:
         run: |
           java -version
           mvn --version
+          sudo ln -s /usr/bin/musl-gcc /usr/local/bin/x86_64-linux-musl-gcc
           # mvn -Dnative-image.args=" --static --libc=musl " -Dmaven.test.skip=true -Pnative native:compile
           # mvn -Dnative-image.buildArgs="--static,--libc=musl,-H:+UseSerialGC,-R:MaxHeapSize=512m" -Dmaven.test.skip=true -Pnative native:compile
           # mvn -Dnative-image.buildArgs="--static,--libc=musl,-H:+UseG1GC" -Dmaven.test.skip=true -Pnative native:compile
