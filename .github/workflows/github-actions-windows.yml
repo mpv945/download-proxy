@@ -179,7 +179,7 @@ jobs:
             chmod +x artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
           fi
           upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
-          docker build -f Dockerfile --build-arg APP_FILE=./artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl -t "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" .
+          docker build -f DockerfileStatic --build-arg APP_FILE=./artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl -t "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" .
           docker save "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" | gzip > "artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl_$BUILD_DATETIME.tar.gz"
           rm -rf pom-native.xml
       - name: Upload Native Executable ${{ matrix.java }} -musl
@@ -240,7 +240,14 @@ jobs:
             echo "CHANGELOG.md not found!"
             exit 1
           fi
-          # 用 awk 截取当前 tag 的 section 到下一个 tag（或文件末尾）
+
+          # 如果 TAG_NAME 不符合 vX.Y.Z 且每段都是 1~8 位数字，则设置默认值
+          if ! [[ "$TAG_NAME" =~ ^v[0-9]{1,8}\.[0-9]{1,8}\.[0-9]{1,8}$ ]]; then
+            echo "Invalid TAG_NAME format: $TAG_NAME. Fallback to v1.2.3"
+            TAG_NAME="v1.1.1"
+          fi
+          
+          # 用 awk 截取当前 tag 的 section 到下一个 tag（或文件末尾） 实际根据日期来 v2025.0808.2351
           awk -v tag="## ${TAG_NAME}" '
             BEGIN { found=0 }
             $0 ~ tag { found=1; next }

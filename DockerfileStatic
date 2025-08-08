@@ -1,5 +1,5 @@
-# 包含基本运行时（glibc、/lib）：其他从小到大的镜像推荐：frolvlad/alpine-glibc 然后 debian:bullseye-slim 最后 ghcr.io/graalvm/native-image
-FROM gcr.io/distroless/base
+# 运行完全静态链接的二进制文件（bash/sh都没有）（甚至连 /lib 都没有）
+FROM gcr.io/distroless/static
 ARG APP_FILE
 EXPOSE 8080
 COPY ${APP_FILE} /app

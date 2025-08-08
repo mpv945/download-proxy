@@ -1,4 +1,4 @@
-## v2025.0808.2351
+## v1.1.1
 
 ### Feature
 - ✨ feat(auth): Add user login feature (#42)
