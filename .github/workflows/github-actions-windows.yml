@@ -219,7 +219,12 @@ jobs:
         run: ls -lRh artifacts/
       - name: Generate SHA-256
         run: ｜
-          for f in artifacts/*; do [ -f "$f" ] && shasum -a 256 "$f" > "$f.sha256"; done
+          for f in artifacts/*; do
+            if [ -f "$f" ]; then
+              shasum -a 256 "$f" > "$f.sha256"
+              echo "Generated SHA256 for $(basename "$f")"
+            fi
+          done
       # 5. 创建 GitHub Release 并上传 Artifacts
       - name: Create Release and Upload Artifacts
         uses: softprops/action-gh-release@v2
