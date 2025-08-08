@@ -20,8 +20,7 @@ jobs:
         id: get-msg
         if: github.event_name == 'push'
         run: |
-          git log -1 --pretty=format:"%s%n%n%b"
-          commit_body=$(git log -1 --pretty=format:"%b")
+          commit_body=$(git log -1 --pretty=format:"%s%n%n%b")
           echo $commit_body
           if [[ "$commit_body" =~ "发布生产" ]]; then
             echo '包含: if echo "$string1" | grep -q "$string2"; then'
