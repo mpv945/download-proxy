@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    # tags: [ 'v*.*.*' ]  # 如 v1.0.0 会触发构建
+    tags: [ 'v*.*.*' ]  # 如 v1.0.0 会触发构建
 jobs:
   init-job:
     runs-on: ubuntu-latest
