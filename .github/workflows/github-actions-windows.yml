@@ -154,7 +154,8 @@ jobs:
         run: |
           java -version
           mvn --version
-          mvn -Dnative-image.args=" --static --libc=musl " -Dmaven.test.skip=true -Pnative native:compile
+          # mvn -Dnative-image.args=" --static --libc=musl " -Dmaven.test.skip=true -Pnative native:compile
+          mvn -Dnative-image.buildArgs="--static,--libc=musl,-H:+UseSerialGC,-R:MaxHeapSize=512m" -Dmaven.test.skip=true -Pnative native:compile
           ls -alh target/
           echo ${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
           if [[ ! "$OS_NAME" =~ windows ]]; then
