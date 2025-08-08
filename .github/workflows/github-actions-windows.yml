@@ -13,6 +13,19 @@ jobs:
     steps:
       - id: set
         run: echo "build-time=$(TZ='Asia/Shanghai' date +'%Y%m%d%H%M%S')" >> "$GITHUB_OUTPUT"
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: get commit msg
+        if: github.event_name == 'push'
+        run: |
+          commit_body=$(git log -1 --pretty=format:"%b")
+          if [[ "$commit_body" =~ "发布生产" ]]; then
+            echo '包含: if echo "$string1" | grep -q "$string2"; then'
+            exit 0
+          else
+            echo "不包含"
+            exit 1
+          fi
   build-matrix-os:
     needs: init-job
     runs-on: ${{ matrix.os }} # 系统os选择：https://github.com/actions/runner-images?tab=readme-ov-file
@@ -189,7 +202,7 @@ jobs:
           path: artifact/*
   deploy-releases:
     runs-on: ubuntu-latest
-    # if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag'
     needs: [build-matrix-os,build-matrix-os-musl]
     env:
       BUILD_DATETIME: ${{ needs.build-matrix-os.outputs.build-time }}
@@ -247,8 +260,9 @@ jobs:
             TAG_NAME="v1.1.1"
           fi
           
-          # 用 awk 截取当前 tag 的 section 到下一个 tag（或文件末尾） 实际根据日期来 v2025.0808.2351 （awk下面一行添加BEGIN { found=0 } 表示不包含tag信息
+          # 用 awk 截取当前 tag 的 section 到下一个 tag（或文件末尾） 实际根据日期来 v2025.0808.2351 
           awk -v tag="## ${TAG_NAME}" '
+            BEGIN { found=0 }
             $0 ~ tag { found=1; next }
             /^## / && found { exit }
             found { content = content $0 "\n" }
@@ -276,19 +290,29 @@ jobs:
           echo "----------------------------------------"
           cat current-changelog.md
           echo "----------------------------------------"
+          # 保存到 GITHUB_OUTPUT 供后续 step 使用
+          {
+            echo "BODY<<EOF"
+            cat current-changelog.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          
+          # 也保存 tag 名称供后续使用
+          # echo "TAG_NAME=$TAG_NAME" >> "$GITHUB_OUTPUT"
       # 5. 创建 GitHub Release 并上传 Artifacts
       - name: Create Release and Upload Artifacts
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         #if: startsWith(github.ref, 'refs/tags/') # 仅在tag时上传
         with:
-          tag_name: v${{ env.VERSION }}
-          name: Release ${{ env.VERSION }}
-          body: Automated release for ${{ env.ARTIFACT_ID }} v${{ env.VERSION }} with UPX compression
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          make_latest: true # 指定是否将此版本设置为仓库的最新版本。草稿版和预发布版不能设置为最新版本。可以是true、false或legacy。
+          draft: false # 指示此版本是否为草稿
+          prerelease: false # 是否为预发布版本
+          preserve_order: true # 指示上传资产时是否应保留文件顺序
+          body: ${{ steps.extract.outputs.BODY }}
           files: |
-            artifacts/native-windows-x86_64/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-windows-x86_64.exe
-            artifacts/native-linux-x86_64/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-linux-x86_64
-            artifacts/native-macos-x86_64/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-macos-x86_64
-            artifacts/native-macos-aarch64/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-macos-aarch64
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            artifacts/*
+        # env:
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
