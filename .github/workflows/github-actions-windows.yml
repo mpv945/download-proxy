@@ -181,7 +181,7 @@ jobs:
           upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
           docker build -f Dockerfile --build-arg APP_FILE=./artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl -t "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" .
           docker save "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" | gzip > "artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl_$BUILD_DATETIME.tar.gz"
-          rm-rf pom-native.xml
+          rm -rf pom-native.xml
       - name: Upload Native Executable
         uses: actions/upload-artifact@v4
         with:
