@@ -244,6 +244,7 @@ jobs:
       - name: List Downloaded Files
         run: ls -lRh artifacts/
       - name: Generate SHA-256
+        if: ${{ env.sha256_flag == '不需要' }}
         # run: for f in artifacts/*; do if [ -f "$f" ]; then shasum -a 256 "$f" > "$f.sha256"; echo "Generated SHA256 for $(basename "$f")"; fi; done
         # echo 'for f in artifacts/*; do [ -f "$f" ] && shasum -a 256 "$f" > "$f.sha256"; done' | bash
         #run: ｜ # find artifacts -maxdepth 1 -type f -exec sh -c 'shasum -a 256 "$1" > "$1.sha256"' _ {} \;
