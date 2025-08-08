@@ -325,5 +325,7 @@ jobs:
           body: ${{ steps.extract.outputs.BODY }}
           files: |
             artifacts/*
-        # env:
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          # 需要申请GITHUB的账号权限token（需要开通 "Contents" repository permissions (write) and "Workflows" repository permissions (write)）
+          # 固定写法
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

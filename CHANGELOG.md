@@ -4,8 +4,11 @@
 - 🧹 构建过程或工具变更
   - 目的：让推送tag和CHANGELOG.md的调整内容在一个tag版本的内容可以发布，先把CHANGELOG.md 内容添加好，提交成功在操作下面的
   - 步骤1: 添加新的 ## v202x.xx.xx 版本标记
-  - 步骤2: git tag -a v2025.0809.0151 -m "新增一个tag，发布生产"
+  - 步骤2: git tag -a v2025.0809.0151 -m "新增一个tag，进行应用的版本发布"
   - 步骤3: git push origin v2025.0809.0151
+  - 删除tag：
+  - 先删除远程 tag（避免别人拉取）：git push origin :refs/tags/v2025.0809.0151
+  - 再删除本地 tag（清理本地引用）：git tag -d v2025.0809.0151
 
 ## v1.1.1
 
