@@ -90,7 +90,7 @@ jobs:
             # upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
           else
             echo "apt install -y maven"
-            sudo apt install -y xz-utils upx
+            sudo apt update && sudo apt install -y xz-utils upx
             upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
             docker build -f Dockerfile --build-arg APP_FILE=./artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }} -t "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}:$BUILD_DATETIME" .
             # 常用压缩：xz -T0 -z；导入：xz -dc < ubuntu_latest.tar.xz | docker load
@@ -112,13 +112,58 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm]
+        java: [24]
     name: Build native image for ${{ matrix.platform }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4 # https://github.com/actions/setup-java
+        with:
+          distribution: 'graalvm' # See 'Supported distributions' for available options
+          java-version: ${{ matrix.java }}
+          cache: "maven"
+          cache-dependency-path: 'pom.xml'
       - name: Build native image in Docker (musl)
         run: |
           sudo apt update && sudo apt install -y musl musl-dev musl-tools
+          sudo apt install -y xz-utils upx
+      - name: Extract Project Name and Version
+        shell: bash
+        run: |
+          ARTIFACT_ID=$(mvn help:evaluate -q -DforceStdout -Dexpression=project.artifactId)
+          VERSION=$(mvn help:evaluate -q -DforceStdout -Dexpression=project.version)
+          echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Normalize OS Name
+        shell: bash
+        run: |
+          OS_NAME=$(java -XshowSettings:properties -version 2>&1 | grep "os.name" | awk -F' = ' '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/ //g')
+          if [[ "$OS_NAME" =~ windows ]]; then
+            OS_CLASSIFIER="windows"
+          elif [[ "$OS_NAME" =~ macos|darwin ]]; then
+            OS_CLASSIFIER="macos"
+          else
+            OS_CLASSIFIER="linux"
+          fi
+          echo "OS_CLASSIFIER=$OS_CLASSIFIER" >> $GITHUB_ENV
+          OS_ARCH=$(java -XshowSettings:properties -version 2>&1 | grep "os.arch" | awk -F' = ' '{print $2}')
+          echo "OS_ARCH=$OS_ARCH" >> $GITHUB_ENV
+      - name: Print Java Info
+        shell: bash
+        run: |
+          java -version
+          mvn --version
+          mvn -Dnative-image.args=" --static --libc=musl " -Dmaven.test.skip=true -Pnative native:compile
+          ls -alh target/
+          echo ${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
+          if [[ ! "$OS_NAME" =~ windows ]]; then
+            chmod +x target/${{ env.ARTIFACT_ID }}
+          fi
+          mkdir artifact
+          cp target/${{ env.ARTIFACT_ID }} artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
+          cp target/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}.jar artifact/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl.jar
+          ls -lah artifact/
   deploy-releases:
     runs-on: ubuntu-latest
     needs: [build-matrix-os,build-matrix-os-musl]
