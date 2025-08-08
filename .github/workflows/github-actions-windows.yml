@@ -6,10 +6,18 @@ on:
       - main
     # tags: [ 'v*.*.*' ]  # 如 v1.0.0 会触发构建
 jobs:
+  init-job:
+    runs-on: ubuntu-latest
+    outputs:
+      build-time: ${{ steps.set.outputs.build-time }}
+    steps:
+      - id: set
+        run: echo "build-time=$(TZ='Asia/Shanghai' date +'%Y%m%d%H%M%S')" >> "$GITHUB_OUTPUT"
   build-matrix-os:
+    needs: init-job
     runs-on: ${{ matrix.os }} # 系统os选择：https://github.com/actions/runner-images?tab=readme-ov-file
     env:
-      BUILD_DATETIME: "$(TZ='Asia/Shanghai' date +'%Y%m%d%H%M%S')"
+      BUILD_DATETIME: ${{ needs.init-job.outputs.build-time }}
     strategy:
       matrix:
         # platform: [linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64]
