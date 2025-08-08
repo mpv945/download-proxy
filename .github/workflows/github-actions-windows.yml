@@ -185,7 +185,7 @@ jobs:
       - name: Upload Native Executable
         uses: actions/upload-artifact@v4
         with:
-          name: artifact-${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
+          name: artifact-${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
           path: artifact/*
   deploy-releases:
     runs-on: ubuntu-latest
