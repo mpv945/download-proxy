@@ -170,14 +170,14 @@ jobs:
             -c "chmod +x ./mvnw && ./mvnw -f pom-native.xml -Dmaven.test.skip=true -Pnative native:compile"
           ls -alh target/
           echo ${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
-          if [[ ! "$OS_NAME" =~ windows ]]; then
-            chmod +x target/${{ env.ARTIFACT_ID }}
-          fi
           mkdir artifact
           cp target/${{ env.ARTIFACT_ID }} artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
           cp target/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}.jar artifact/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl.jar
           ls -lah artifact/
           sudo apt update && sudo apt install -y xz-utils upx zlib1g-dev
+          if [[ ! "$OS_NAME" =~ windows ]]; then
+            chmod +x artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
+          fi
           upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
           docker build -f Dockerfile --build-arg APP_FILE=./artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl -t "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" .
           docker save "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" | gzip > "artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl_$BUILD_DATETIME.tar.gz"
