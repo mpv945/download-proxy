@@ -218,6 +218,7 @@ jobs:
       - name: List Downloaded Files
         run: ls -lRh artifacts/
       - name: Generate SHA-256
+        # run: for f in artifacts/*; do if [ -f "$f" ]; then shasum -a 256 "$f" > "$f.sha256"; echo "Generated SHA256 for $(basename "$f")"; fi; done
         # echo 'for f in artifacts/*; do [ -f "$f" ] && shasum -a 256 "$f" > "$f.sha256"; done' | bash
         #run: ｜ # find artifacts -maxdepth 1 -type f -exec sh -c 'shasum -a 256 "$1" > "$1.sha256"' _ {} \;
         run: |  # 保留换行
@@ -227,6 +228,48 @@ jobs:
               echo "Generated SHA256 for $(basename "$f")"
             fi
           done
+          ls -lRh artifacts/
+      - name: Extract current version changelog
+        id: extract
+        run: |
+          TAG_NAME="${GITHUB_REF##*/}"  # 提取 tag 名称，如 v1.2.3
+          echo "Processing tag: $TAG_NAME"
+          
+          # 检查 CHANGELOG.md 是否存在
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo "CHANGELOG.md not found!"
+            exit 1
+          fi
+          # 用 awk 截取当前 tag 的 section 到下一个 tag（或文件末尾）
+          awk -v tag="## ${TAG_NAME}" '
+            BEGIN { found=0 }
+            $0 ~ tag { found=1; next }
+            /^## / && found { exit }
+            found { content = content $0 "\n" }
+            END { 
+              if (found) {
+                # 移除末尾多余的换行符
+                gsub(/\n+$/, "", content)
+                print content
+              } else {
+                print "No changelog found for " tag
+                exit 1
+              }
+            }
+          ' CHANGELOG.md > current-changelog.md
+          
+          # 检查是否成功提取内容
+          if [ ! -s current-changelog.md ]; then
+            echo "No changelog content found for $TAG_NAME"
+            echo "Available sections in CHANGELOG.md:"
+            grep "^## " CHANGELOG.md || echo "No sections found"
+            exit 1
+          fi
+          
+          echo "Successfully extracted changelog:"
+          echo "----------------------------------------"
+          cat current-changelog.md
+          echo "----------------------------------------"
       # 5. 创建 GitHub Release 并上传 Artifacts
       - name: Create Release and Upload Artifacts
         uses: softprops/action-gh-release@v2
