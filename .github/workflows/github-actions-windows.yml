@@ -159,6 +159,7 @@ jobs:
           # mvn -Dnative-image.buildArgs="--static,--libc=musl,-H:+UseG1GC" -Dmaven.test.skip=true -Pnative native:compile
           sed 's|<buildArg>--no-fallback</buildArg>|<buildArg>--no-fallback</buildArg><buildArg>--gc=G1</buildArg><buildArg>--static</buildArg><buildArg>--libc=musl</buildArg>|' pom.xml > pom-native.xml
           cat pom-native.xml
+          mvn -f pom-native.xml -Dnative-image.args=" --static --libc=musl " -Dmaven.test.skip=true -Pnative native:compile
           ls -alh target/
           echo ${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
           if [[ ! "$OS_NAME" =~ windows ]]; then
@@ -168,6 +169,7 @@ jobs:
           cp target/${{ env.ARTIFACT_ID }} artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
           cp target/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}.jar artifact/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl.jar
           ls -lah artifact/
+          rm-rf pom-native.xml
   deploy-releases:
     runs-on: ubuntu-latest
     needs: [build-matrix-os,build-matrix-os-musl]
