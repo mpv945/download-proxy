@@ -29,7 +29,7 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
-      - name: Set up Java
+      - name: Set up Java ${{ matrix.os }}
         uses: actions/setup-java@v4 # https://github.com/actions/setup-java
         with:
           distribution: 'graalvm' # See 'Supported distributions' for available options
@@ -37,14 +37,14 @@ jobs:
           # check-latest: true
           cache: "maven"
           cache-dependency-path: 'pom.xml'
-      - name: Extract Project Name and Version
+      - name: Extract Project Name and Version ${{ matrix.os }}
         shell: bash
         run: |
           ARTIFACT_ID=$(mvn help:evaluate -q -DforceStdout -Dexpression=project.artifactId)
           VERSION=$(mvn help:evaluate -q -DforceStdout -Dexpression=project.version)
           echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-      - name: Normalize OS Name
+      - name: Normalize OS Name ${{ matrix.os }}
         shell: bash
         run: |
           OS_NAME=$(java -XshowSettings:properties -version 2>&1 | grep "os.name" | awk -F' = ' '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/ //g')
@@ -58,7 +58,7 @@ jobs:
           echo "OS_CLASSIFIER=$OS_CLASSIFIER" >> $GITHUB_ENV
           OS_ARCH=$(java -XshowSettings:properties -version 2>&1 | grep "os.arch" | awk -F' = ' '{print $2}')
           echo "OS_ARCH=$OS_ARCH" >> $GITHUB_ENV
-      - name: Print Java Info
+      - name: Print Java Info ${{ matrix.os }}
         shell: bash
         run: |
           java -version
@@ -73,7 +73,7 @@ jobs:
           cp target/${{ env.ARTIFACT_ID }}${{ matrix.os == 'windows-latest' && '.exe' || '' }} artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
           cp target/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}.jar artifact/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}.jar
           ls -lah artifact/
-      - name: install upx
+      - name: install upx ${{ matrix.os }}
         #if: "!contains(matrix.os, windows)"
         shell: bash
         # shell: ${{ matrix.os == 'windows-latest' && 'cmd' || 'bash' }}
@@ -98,7 +98,7 @@ jobs:
             docker save "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}:$BUILD_DATETIME" | gzip > "artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}_$BUILD_DATETIME.tar.gz"
           fi
           ls -lah artifact/
-      - name: Upload Native Executable
+      - name: Upload Native Executable ${{ matrix.os }}
         uses: actions/upload-artifact@v4
         with:
           name: artifact-${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
@@ -114,29 +114,29 @@ jobs:
       matrix:
         os: [ubuntu-latest] # arm架构对musl支持很差, ubuntu-24.04-arm
         java: [24]
-    name: Build native image for ${{ matrix.platform }}
+    name: Build native image for ${{ matrix.platform }} -musl
     steps:
-      - name: Checkout source
+      - name: Checkout source ${{ matrix.os }} -musl
         uses: actions/checkout@v4
-      - name: Set up Java
+      - name: Set up Java ${{ matrix.os }} -musl
         uses: actions/setup-java@v4 # https://github.com/actions/setup-java
         with:
           distribution: 'graalvm' # See 'Supported distributions' for available options
           java-version: ${{ matrix.java }}
           cache: "maven"
           cache-dependency-path: 'pom.xml'
-      - name: Build native image in Docker (musl)
+      - name: Build native image in Docker (musl) ${{ matrix.java }} -musl
         run: |
           sudo apt update && sudo apt install -y musl musl-dev musl-tools
           sudo apt install -y xz-utils upx
-      - name: Extract Project Name and Version
+      - name: Extract Project Name and Version ${{ matrix.java }} -musl
         shell: bash
         run: |
           ARTIFACT_ID=$(mvn help:evaluate -q -DforceStdout -Dexpression=project.artifactId)
           VERSION=$(mvn help:evaluate -q -DforceStdout -Dexpression=project.version)
           echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-      - name: Normalize OS Name
+      - name: Normalize OS Name ${{ matrix.java }} -musl
         shell: bash
         run: |
           OS_NAME=$(java -XshowSettings:properties -version 2>&1 | grep "os.name" | awk -F' = ' '{print $2}' | tr '[:upper:]' '[:lower:]' | sed 's/ //g')
@@ -150,7 +150,7 @@ jobs:
           echo "OS_CLASSIFIER=$OS_CLASSIFIER" >> $GITHUB_ENV
           OS_ARCH=$(java -XshowSettings:properties -version 2>&1 | grep "os.arch" | awk -F' = ' '{print $2}')
           echo "OS_ARCH=$OS_ARCH" >> $GITHUB_ENV
-      - name: Print Java Info
+      - name: Print Java Info ${{ matrix.java }} -musl
         shell: bash
         run: |
           java -version
@@ -182,13 +182,14 @@ jobs:
           docker build -f Dockerfile --build-arg APP_FILE=./artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl -t "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" .
           docker save "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" | gzip > "artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl_$BUILD_DATETIME.tar.gz"
           rm -rf pom-native.xml
-      - name: Upload Native Executable
+      - name: Upload Native Executable ${{ matrix.java }} -musl
         uses: actions/upload-artifact@v4
-        with:
+        with: # name 不同和其他job重复，名字相同同时运行会报错
           name: artifact-${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
           path: artifact/*
   deploy-releases:
     runs-on: ubuntu-latest
+    # if: github.ref_type == 'tag'
     needs: [build-matrix-os,build-matrix-os-musl]
     env:
       BUILD_DATETIME: ${{ needs.build-matrix-os.outputs.build-time }}
@@ -216,6 +217,9 @@ jobs:
       # 4. 列出下载的文件（调试）
       - name: List Downloaded Files
         run: ls -lRh artifacts/
+      - name: Generate SHA-256
+        run: ｜
+          for f in artifacts/*; do [ -f "$f" ] && shasum -a 256 "$f" > "$f.sha256"; done
       # 5. 创建 GitHub Release 并上传 Artifacts
       - name: Create Release and Upload Artifacts
         uses: softprops/action-gh-release@v2
