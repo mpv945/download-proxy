@@ -171,7 +171,7 @@ jobs:
           cp target/${{ env.ARTIFACT_ID }} artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
           cp target/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}.jar artifact/${{ env.ARTIFACT_ID }}-${{ env.VERSION }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl.jar
           ls -lah artifact/
-          sudo apt update && sudo apt install -y xz-utils upx
+          sudo apt update && sudo apt install -y xz-utils upx zlib1g-dev
           upx --best --lzma --all-filters artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl
           docker build -f Dockerfile --build-arg APP_FILE=./artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl -t "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" .
           docker save "${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl:$BUILD_DATETIME" | gzip > "artifact/${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}-musl_$BUILD_DATETIME.tar.gz"
