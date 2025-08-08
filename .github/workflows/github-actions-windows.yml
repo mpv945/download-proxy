@@ -2,8 +2,8 @@ name: Java本地原生应用开发编译和部署
 run-name: ${{ github.actor }} GitHub Actions 🚀
 on:
   push:
-    branches:
-      - main
+    #branches:
+    #  - main
     tags: [ 'v*.*.*' ]  # 如 v1.0.0 会触发构建
 permissions:
   contents: write  # ✅ 关键点：授予 GITHUB_TOKEN 发布 release 的权限
@@ -329,5 +329,8 @@ jobs:
             artifacts/*
         env:
           # 需要申请GITHUB的账号权限token（需要开通 "Contents" repository permissions (write) and "Workflows" repository permissions (write)）
-          # 固定写法
+          # 1. 创建TOKEN。登录后点击头像 --> 选择（设置 settings）
+          # 2. 跳转页面后，在左边菜单栏找到 （Developer settings 开发者设置） 点击跳转
+          # 3. 跳转页面找到左菜单栏 （Personal access tokens）“个人访问令牌”下拉菜单选择 【Tokens (classic) 】单击“令牌（经典）
+          # 4 选择生成令牌（也选择经典classic） ，弹出对于的 过期时间和权限访问
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
