@@ -102,9 +102,32 @@ jobs:
         with:
           name: artifact-${{ env.ARTIFACT_ID }}-${{ env.OS_CLASSIFIER }}-${{ env.OS_ARCH }}
           path: artifact/*
+  build-matrix-os-musl:
+    needs: init-job
+    runs-on: ${{ matrix.os }} # 系统os选择：https://github.com/actions/runner-images?tab=readme-ov-file
+    env:
+      BUILD_DATETIME: ${{ needs.init-job.outputs.build-time }}
+    outputs: # 二次传递跨job
+      build-time: ${{ needs.init-job.outputs.build-time }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    name: Build native image for ${{ matrix.platform }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Build native image in Docker (musl)
+        run: |
+          docker info
+          docker run --rm \
+            --entrypoint /bin/bash \
+            -v $PWD:/app \
+            -w /app \
+            ghcr.io/graalvm/native-image-community:24-muslib \
+            -c "uname -a"
   deploy-releases:
     runs-on: ubuntu-latest
-    needs: [build-matrix-os]
+    needs: [build-matrix-os,build-matrix-os-musl]
     env:
       BUILD_DATETIME: ${{ needs.build-matrix-os.outputs.build-time }}
     # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
