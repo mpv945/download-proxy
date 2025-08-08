@@ -10,25 +10,34 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build-time: ${{ steps.set.outputs.build-time }}
+      is_build: ${{ steps.build-flag.outputs.is_build }}
     steps:
       - id: set
         run: echo "build-time=$(TZ='Asia/Shanghai' date +'%Y%m%d%H%M%S')" >> "$GITHUB_OUTPUT"
       - name: Checkout source
         uses: actions/checkout@v4
       - name: get commit msg
+        id: get-msg
         if: github.event_name == 'push'
         run: |
           commit_body=$(git log -1 --pretty=format:"%b")
           if [[ "$commit_body" =~ "发布生产" ]]; then
             echo '包含: if echo "$string1" | grep -q "$string2"; then'
-            exit 0
+            # exit 0
+            echo "is_build_tmp=true" >> $GITHUB_OUTPUT
           else
             echo "不包含"
-            exit 1
+            # exit 1
+            echo "is_build_tmp=false" >> $GITHUB_OUTPUT
           fi
+      - name: Step 2 (fallback setter)
+        id: build-flag
+        run: |
+          echo "is_build=${{ steps.get-msg.outputs.is_build_tmp || 'true' }}" >> $GITHUB_OUTPUT
   build-matrix-os:
     needs: init-job
     runs-on: ${{ matrix.os }} # 系统os选择：https://github.com/actions/runner-images?tab=readme-ov-file
+    if: ${{ needs.init-job.outputs.is_build == 'true' }}
     env:
       BUILD_DATETIME: ${{ needs.init-job.outputs.build-time }}
     outputs: # 二次传递跨job
@@ -118,6 +127,7 @@ jobs:
           path: artifact/*
   build-matrix-os-musl:
     needs: init-job
+    if: ${{ needs.init-job.outputs.is_build == 'true' }}
     runs-on: ${{ matrix.os }} # 系统os选择：https://github.com/actions/runner-images?tab=readme-ov-file
     env:
       BUILD_DATETIME: ${{ needs.init-job.outputs.build-time }}
