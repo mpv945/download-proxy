@@ -5,6 +5,8 @@ on:
     branches:
       - main
     tags: [ 'v*.*.*' ]  # 如 v1.0.0 会触发构建
+permissions:
+  contents: write  # ✅ 关键点：授予 GITHUB_TOKEN 发布 release 的权限
 jobs:
   init-job:
     runs-on: ubuntu-latest
