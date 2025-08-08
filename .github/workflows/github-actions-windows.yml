@@ -247,9 +247,8 @@ jobs:
             TAG_NAME="v1.1.1"
           fi
           
-          # 用 awk 截取当前 tag 的 section 到下一个 tag（或文件末尾） 实际根据日期来 v2025.0808.2351
+          # 用 awk 截取当前 tag 的 section 到下一个 tag（或文件末尾） 实际根据日期来 v2025.0808.2351 （awk下面一行添加BEGIN { found=0 } 表示不包含tag信息
           awk -v tag="## ${TAG_NAME}" '
-            BEGIN { found=0 }
             $0 ~ tag { found=1; next }
             /^## / && found { exit }
             found { content = content $0 "\n" }
